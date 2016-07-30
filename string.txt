@@ -1,0 +1,95 @@
+//头文件（my_string.h）
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include<iostream>
+#include<stdlib.h>
+
+using namespace std;
+
+class my_string
+{
+	friend ostream& operator<<(ostream& os, my_string& str);//重载>>运算符（友元函数）
+public:
+	my_string(const char* str)//赋值构造兼默认构造函数
+	{
+		if (!str)
+		{
+			_data = new char[1];
+			*_data = '\0';
+		}
+		else
+		{
+			_data = new char[strlen(str) + 1];
+			strcpy(_data, str);
+		}
+	}
+
+	my_string(const my_string& other)//拷贝构造
+	{
+		if (!other._data)//在类的成员函数内可以访问同种对象的私有成员（同种类则是友元关系）  
+		{
+			*_data = '\0';
+		}
+		else
+		{
+			_data = new char[strlen(other._data) + 1];
+			strcpy(_data, other._data);
+		}
+	}
+
+	my_string &operator=(const my_string& other)//赋值运算符重载
+	{
+		if (this != &other)
+		{
+			delete[] _data;
+			if (!other._data)
+				*_data = '\0';
+			else
+			{
+				_data = new char[strlen(other._data) + 1];
+				strcpy(_data, other._data);
+			}
+		}
+		return *this;
+	}
+
+	bool operator==(const my_string& str)//operator==
+	{
+		if (strlen(str._data) != strlen(_data))
+			return false;
+		return strcmp(_data, str._data) ? false : true;
+	}
+
+	~my_string()//析构函数
+	{
+		delete[] _data;
+	}
+
+private:
+	char* _data;//用于保存字符串
+};
+
+ostream& operator<<(ostream& os, my_string& str)//流输出运算
+{
+	os << str._data;
+	return os;
+}
+
+
+//测试函数（源.cpp）
+#define _CRT_SECURE_NO_WARNINGS 1
+
+#include "my_string.h"
+
+int main()
+{
+	my_string s1 = "hello ";
+	my_string s2 = "world!";
+
+	cout << s1 << s2 << endl;
+	cout << "bool:" <<( s1 == s2 )<< endl;
+
+
+	system("pause");
+	return 0;
+}
