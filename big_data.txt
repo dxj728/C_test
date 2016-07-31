@@ -1,0 +1,189 @@
+﻿//———————————————————头文件（BIG_DATA.h）——————————————————————————
+#define _CRT_SECURE_NO_WARNINGS 1
+#ifndef BIGDATA_H
+#define BIGDATA_H
+
+#include<string>
+#include<iostream>
+#include<assert.h>
+
+using namespace std;
+
+#define UN_INIT   0xCCCCCCCCCCCCCCCC
+#define MAX_64NUM 0x7FFFFFFFFFFFFFFF
+#define MIN_64NUM 0x8000000000000000
+typedef long long INT64;
+
+class Bigdata
+{
+public:
+	Bigdata();
+	Bigdata(INT64 value = UN_INIT);
+	Bigdata(char* pdata = NULL)
+	{
+		assert(NULL != pdata);
+		char csymbol = pdata[0];
+		if (pdata[0] >= '0'&&pdata[0] <= '9')
+		{
+			csymbol = '+';
+		}
+		else if ('+' == csymbol || '-' == csymbol)
+		{
+			pdata++;
+		}
+		else
+		{
+			char* tmp = "123";
+			swap(tmp, pdata);
+			return;
+		}
+		while ('0' == *pdata)
+			pdata++;
+		/*********转换**************/
+		_strData.resize(strlen(pdata) + 1);      //sizeof和strlen的区别                      
+		_strData[0] = csymbol;
+
+		int icount = 1;
+		_value = 0;
+
+		while (*pdata >= '0'&&*pdata <= '9')
+		{
+			_strData[icount++] = *pdata;
+			_value = _value * 10 + *pdata - '0';
+			pdata++;
+		}
+		if (csymbol == '-')
+		{
+			_value = 0 - _value;
+		}
+		_strData.resize(icount);
+	}
+
+	Bigdata operator+(const Bigdata& bigdata)
+	{
+		if (!isoverflow() && !bigdata.isoverflow())
+		{
+			if (_strData[0] != bigdata._strData[0])
+			{
+				return Bigdata(_value + bigdata._value);
+			}
+			else
+			{
+				if (('+' == _strData[0] && MAX_64NUM - _value <= bigdata._value)
+					|| ('-' == _strData[0] && MIN_64NUM - _value >= bigdata._value))
+				{
+					return Bigdata(_value + bigdata._value);
+				}
+			}
+		}
+		if (_strData[0] == bigdata._strData[0])
+		{
+			return Bigdata((char*)Add(_strData, bigdata._strData).c_str());
+		}
+
+		return Bigdata((char*)Sub(_strData, bigdata._strData).c_str());
+	}
+
+	string Add(string left, string right)
+	{
+		int Lsize = left.size();
+		int Rsize = right.size();
+		if (Lsize < Rsize)
+		{
+			swap(left, right);
+			swap(Lsize, Rsize);
+		}
+		string strRet;
+		strRet.resize(Lsize + 1);
+		strRet[0] = left[0];
+		char step = 0;
+
+		//逐个相加
+		for (int ix = 1; ix < Lsize; ix++)
+		{
+			char cRet = left[Lsize - ix] - '0';
+			if (ix < Rsize)
+			{
+				cRet += right[Rsize - ix] - '0';
+			}
+			strRet[Lsize - ix + 1] = cRet % 10 + '0';
+			step = cRet / 10;
+		}
+		strRet[1] = step + '0';
+		return strRet;
+	}
+
+	string Sub(string left, string right)
+	{
+		return "";
+	}
+
+	friend ostream& operator<<(ostream& _cout, Bigdata& bigdata)
+	{
+		if (!bigdata.isoverflow())
+		{
+			_cout << bigdata._value;
+		}
+		else
+		{
+			char *pData = (char*)bigdata._strData.c_str();
+			if ('+' == bigdata._strData[0])
+			{
+				pData++;
+			}
+			_cout << pData;
+		}
+		return _cout;
+	}
+private:
+	bool isoverflow() const            //修饰函数，即函数内不能改变其原有数据
+	{
+		string temp("+9223372036854775807");
+		if ('-' == _strData[0])
+		{
+			temp = ("-9223372036854775808");
+		}
+		if (_strData.size() < temp.size())
+		{
+			return false;
+		}
+		else if (_strData.size() == temp.size())
+		{
+			return false;
+		}
+		return true;
+	}
+private:
+	INT64 _value;
+	string _strData;
+};
+#endif
+
+//—————————————————————————源文件（源.cpp）———————————————————————————————————
+#define _CRT_SECURE_NO_WARNINGS 1
+#define _CRT_SECURE_NO_WARNINGS 1
+#include "BIG_DATA.h"
+int main()
+{
+	Bigdata b("+123456789012356789");
+	cout << b << endl;
+
+	Bigdata b1("12345678901234567890134567890");
+	cout << b1 << endl;
+
+	cout << b + b1 << endl;
+
+
+
+
+
+
+	return 0;
+}
+
+
+
+
+
+
+
