@@ -6,7 +6,7 @@
 #include<string>
 #include<iostream>
 #include<assert.h>
-
+ //1234567
 using namespace std;
 
 #define UN_INIT   0xCCCCCCCCCCCCCCCC
